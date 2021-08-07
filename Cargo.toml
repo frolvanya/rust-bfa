@@ -6,3 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+futures = "0.3.16"
+reqwest = "0.11.4"
+itertools = "0.10.1"
+tokio = { version = "1.9.0", features = ["macros", "rt-multi-thread"] }
