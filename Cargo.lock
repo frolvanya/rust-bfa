@@ -732,6 +732,7 @@ dependencies = [
  "futures",
  "itertools",
  "reqwest",
+ "serde",
  "tokio",
 ]
 
