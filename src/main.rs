@@ -1,3 +1,5 @@
+// use std::{fs::File, io::BufRead, io::BufReader};
+
 use chrono::prelude::*;
 use clap::{App, Arg};
 use itertools::Itertools;
@@ -23,12 +25,34 @@ async fn sending_requests(
     username_field: String,
     password_field: String,
     error_message: String,
+    file_path: String,
 ) {
     let url = std::sync::Arc::new(url);
     let username = std::sync::Arc::new(username);
     let username_field = std::sync::Arc::new(username_field);
     let password_field = std::sync::Arc::new(password_field);
     let error_message = std::sync::Arc::new(error_message);
+    let _file_path = std::sync::Arc::new(file_path);
+
+    // let mut password_list;
+
+    // if file_path == std::sync::Arc::new("".to_string()) {
+    //     let password_list = password_generator();
+    // } else {
+    //     let file: File = match File::open(&**file_path) {
+    //         Ok(file) => file,
+    //         Err(_) => {
+    //             println!(
+    //                 "[{}] File is not found",
+    //                 Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()
+    //             );
+    //             std::process::exit(1);
+    //         }
+    //     };
+    //     let reader = BufReader::new(file);
+
+    //     let password_list = password_generator();
+    // }
 
     let mut tasks = Vec::new();
     let mut request_amount = 0;
@@ -72,7 +96,7 @@ async fn sending_requests(
                                 );
 
                                 println!(
-                                    "[{}] Request Per Second: {:.3}",
+                                    "[{}] Requests Per Second: {:.3}",
                                     Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
                                     request_amount as f64 / start_time.elapsed().as_secs_f64(),
                                 );
@@ -146,6 +170,15 @@ async fn main() {
                 .help("Sets an authentication error message")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("file_path")
+                .short("f")
+                .long("file")
+                .value_name("FILE")
+                .required(false)
+                .help("Sets a file path")
+                .takes_value(true),
+        )
         .get_matches();
 
     let website_url: &str = matches.value_of("url").unwrap();
@@ -153,6 +186,10 @@ async fn main() {
     let username_field: &str = matches.value_of("username_field").unwrap();
     let password_field: &str = matches.value_of("password_field").unwrap();
     let error_message: &str = matches.value_of("error_message").unwrap();
+    let file_path: &str = match matches.value_of("file_path") {
+        Some(path) => path,
+        None => "",
+    };
 
     println!(
         "[{}] Starting Brute Force Attack",
@@ -165,6 +202,7 @@ async fn main() {
         username_field.to_string(),
         password_field.to_string(),
         error_message.to_string(),
+        file_path.to_string(),
     )
     .await
 }
