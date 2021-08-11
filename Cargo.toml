@@ -12,3 +12,4 @@ futures = "0.3.16"
 reqwest = "0.11.4"
 itertools = "0.10.1"
 tokio = { version = "1.9.0", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["rc"] }
