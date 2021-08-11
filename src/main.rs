@@ -43,7 +43,7 @@ async fn sending_requests(
         let error_message = &error_message;
 
         tasks.push(async move {
-            let fields = [(username, username_field), (password_field, &password)];
+            let fields = [(username_field, username), (password_field, &password)];
 
             loop {
                 match reqwest::Client::new()
