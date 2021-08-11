@@ -30,33 +30,34 @@ async fn sending_requests(
     let password_field = std::sync::Arc::new(password_field);
     let error_message = std::sync::Arc::new(error_message);
     let mut request_amount = 0;
-    let mut tasks: Vec<tokio::task::JoinHandle<Result<(), ()>>> = Vec::new();
+    let mut tasks = Vec::new();
 
     for password in password_generator() {
         request_amount += 1;
 
-        let url = url.clone();
-        let username = username.clone();
-        let username_field = username_field.clone();
+        let url = &url;
+        let username = &username;
         let password = std::sync::Arc::new(password);
-        let password_field = password_field.clone();
-        let error_message = error_message.clone();
-        tasks.push(tokio::spawn(async move {
+        let username_field = &username_field;
+        let password_field = &password_field;
+        let error_message = &error_message;
+
+        tasks.push(async move {
             let fields = [
                 (username, username_field),
-                (password_field, password.clone()),
+                (password_field, &password),
             ];
 
             loop {
                 match reqwest::Client::new()
-                    .post(&*url)
+                    .post(&**url)
                     .form(&fields)
                     .send()
                     .await
                 {
                     Ok(resp) => match resp.text().await {
                         Ok(text) => {
-                            if text.contains(&*error_message) {
+                            if text.contains(&**error_message) {
                                 println!(
                                     "[{}] Correct Password: '{}'",
                                     Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
@@ -78,8 +79,7 @@ async fn sending_requests(
                     Err(_) => {}
                 };
             }
-            Ok(())
-        }));
+        });
 
         if tasks.len() % 1000 == 0 {
             let tasks_length = tasks.len();
