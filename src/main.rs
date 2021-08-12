@@ -35,7 +35,6 @@ async fn sending_requests(
     let file_path = std::sync::Arc::new(file_path);
 
     let mut password_list: Box<dyn Iterator<Item = String>> = Box::new(password_generator());
-
     if file_path != std::sync::Arc::new("".to_string()) {
         let file: File = match File::open(&**file_path) {
             Ok(file) => file,
@@ -56,7 +55,7 @@ async fn sending_requests(
     let mut request_amount = 0;
     let start_time = std::time::Instant::now();
 
-    for password in password_generator() {
+    for password in password_list {
         request_amount += 1;
 
         let url = &url;
@@ -110,7 +109,7 @@ async fn sending_requests(
             }
         });
 
-        if tasks.len() % 1000 == 0 {
+        if tasks.len() % 10000 == 0 {
             let tasks_length = tasks.len();
 
             println!(
