@@ -1,5 +1,12 @@
-To start programm:
+To compile program:
 ```
 $ cargo build --release
-$ ./target/release/rust-bfa -u "https://bla-bla-bla.com" -l "root" --username-field "username" --password-field "password" --err "Auth Error"
+```
+To start program (generating own password list): 
+```
+$ ./target/release/rust-bfa --url "https://website.com" --login "username" --username-field "username" --password-field "password" --err "Auth Error"
+```
+To start program (reading file with password list): 
+```
+$ ./target/release/rust-bfa --url "https://website.com" --login "username" --username-field "username" --password-field "password" --err "Auth Error" --file "file_path"
 ```
