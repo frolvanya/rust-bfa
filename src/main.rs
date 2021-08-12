@@ -1,4 +1,4 @@
-// use std::{fs::File, io::BufRead, io::BufReader};
+use std::{fs::File, io::BufRead, io::BufReader};
 
 use chrono::prelude::*;
 use clap::{App, Arg};
@@ -32,27 +32,25 @@ async fn sending_requests(
     let username_field = std::sync::Arc::new(username_field);
     let password_field = std::sync::Arc::new(password_field);
     let error_message = std::sync::Arc::new(error_message);
-    let _file_path = std::sync::Arc::new(file_path);
+    let file_path = std::sync::Arc::new(file_path);
 
-    // let mut password_list;
+    let mut password_list = password_generator();
 
-    // if file_path == std::sync::Arc::new("".to_string()) {
-    //     let password_list = password_generator();
-    // } else {
-    //     let file: File = match File::open(&**file_path) {
-    //         Ok(file) => file,
-    //         Err(_) => {
-    //             println!(
-    //                 "[{}] File is not found",
-    //                 Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()
-    //             );
-    //             std::process::exit(1);
-    //         }
-    //     };
-    //     let reader = BufReader::new(file);
+    if file_path != std::sync::Arc::new("".to_string()) {
+        let file: File = match File::open(&**file_path) {
+            Ok(file) => file,
+            Err(_) => {
+                println!(
+                    "[{}] File is not found",
+                    Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()
+                );
+                std::process::exit(1);
+            }
+        };
+        let reader = BufReader::new(file);
 
-    //     let password_list = password_generator();
-    // }
+        password_list = reader.lines().map(|line| line.unwrap());
+    }
 
     let mut tasks = Vec::new();
     let mut request_amount = 0;
