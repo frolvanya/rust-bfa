@@ -34,7 +34,7 @@ async fn sending_requests(
     let error_message = std::sync::Arc::new(error_message);
     let file_path = std::sync::Arc::new(file_path);
 
-    let mut password_list = password_generator();
+    let mut password_list: Box<dyn Iterator<Item = String>> = Box::new(password_generator());
 
     if file_path != std::sync::Arc::new("".to_string()) {
         let file: File = match File::open(&**file_path) {
@@ -49,7 +49,7 @@ async fn sending_requests(
         };
         let reader = BufReader::new(file);
 
-        password_list = reader.lines().map(|line| line.unwrap());
+        password_list = Box::new(reader.lines().map(|line| line.unwrap()));
     }
 
     let mut tasks = Vec::new();
